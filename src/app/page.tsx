@@ -25,7 +25,7 @@ interface BotInfo {
 }
 
 export default function Home() {
-  const [leads, setLeads] = useState<Lead[]>(initialLeads);
+  const [leads, setLeads] = useState<Lead[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isProcessing, setIsProcessing] = useState(false);
   const [currentResult, setCurrentResult] = useState<AiResult | null>(null);
@@ -55,9 +55,13 @@ export default function Home() {
     fetch('/api/leads')
       .then((r) => r.json())
       .then((data) => {
-        if (data.success && data.leads.length > 0) setLeads(data.leads);
+        if (data.success && data.leads.length > 0) {
+          setLeads(data.leads);
+        } else {
+          setLeads(initialLeads);
+        }
       })
-      .catch(() => {});
+      .catch(() => setLeads(initialLeads));
 
     fetch('/api/telegram/bot-info')
       .then((r) => r.json())

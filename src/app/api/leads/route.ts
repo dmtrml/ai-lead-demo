@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { processLead, getStoredLeads } from '@/lib/leads';
+import { readLeads, ensureSheetHeaders } from '@/lib/sheets';
 
 export async function POST(request: Request) {
   try {
@@ -39,8 +40,14 @@ export async function POST(request: Request) {
 
 export async function GET() {
   try {
-    const leads = getStoredLeads();
-    return NextResponse.json({ success: true, leads });
+    const fromSheets = await readLeads();
+
+    if (fromSheets.length > 0) {
+      return NextResponse.json({ success: true, leads: fromSheets, source: 'sheets' });
+    }
+
+    const fromMemory = getStoredLeads();
+    return NextResponse.json({ success: true, leads: fromMemory, source: 'memory' });
   } catch (error) {
     console.error('[API] GET /api/leads error:', error);
     return NextResponse.json(

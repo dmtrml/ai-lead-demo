@@ -13,8 +13,56 @@ function getClient(): sheets_v4.Resource$Spreadsheets {
     });
     sheetsClient = google.sheets({ version: 'v4', auth }).spreadsheets;
   }
-  return sheetsClient;
+  return sheetsClient!;
 }
+
+export async function readLeads(): Promise<Lead[]> {
+  if (isMockMode() || !isSheetsAvailable()) {
+    return [];
+  }
+
+  try {
+    const client = getClient();
+    const response = await client.values.get({
+      spreadsheetId: config.sheets.spreadsheetId,
+      range: 'Leads!A2:Q',
+    });
+
+    const rows = response.data.values;
+    if (!rows || rows.length === 0) return [];
+
+    const priorityMap: Record<string, 'hot' | 'warm' | 'cold'> = {
+      'Горячий': 'hot',
+      'Тёплый': 'warm',
+      'Холодный': 'cold',
+    };
+
+    return rows.map((row: string[]) => ({
+      id: row[0] || '',
+      date: row[1] || '',
+      name: row[2] || 'Не указано',
+      contact: row[3] || '',
+      source: row[4] || '',
+      message: row[5] || '',
+      niche: row[6] || '',
+      service_type: row[7] || '',
+      budget: row[8] || '',
+      urgency: row[9] || '',
+      summary: row[10] || '',
+      lead_priority: priorityMap[row[11]] || 'cold',
+      priority_label_ru: row[11] || 'Холодный',
+      priority_reason: row[12] || '',
+      questions_to_ask: (row[13] || '').split('; ').filter(Boolean),
+      draft_reply: row[14] || '',
+      status: row[15] || 'Новая',
+      responsible: row[16] || 'Менеджер',
+    }));
+  } catch (error) {
+    console.error('[Sheets] read error:', error);
+    return [];
+  }
+}
+
 
 export async function ensureSheetHeaders(): Promise<void> {
   if (isMockMode() || !isSheetsAvailable()) return;
