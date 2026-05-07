@@ -126,11 +126,40 @@ export async function appendLead(lead: Lead): Promise<boolean> {
       lead.responsible,
     ];
 
-    await client.values.append({
+    const sheetInfo = await client.get({
       spreadsheetId: config.sheets.spreadsheetId,
-      range: 'Leads!A:Q',
+      ranges: [],
+      includeGridData: false,
+    });
+
+    const sheet = sheetInfo.data.sheets?.find(
+      (s) => s.properties?.title === 'Leads',
+    );
+    const sheetId = sheet?.properties?.sheetId ?? 0;
+
+    await client.batchUpdate({
+      spreadsheetId: config.sheets.spreadsheetId,
+      requestBody: {
+        requests: [
+          {
+            insertDimension: {
+              range: {
+                sheetId,
+                dimension: 'ROWS',
+                startIndex: 1,
+                endIndex: 2,
+              },
+              inheritFromBefore: false,
+            },
+          },
+        ],
+      },
+    });
+
+    await client.values.update({
+      spreadsheetId: config.sheets.spreadsheetId,
+      range: 'Leads!A2:Q2',
       valueInputOption: 'RAW',
-      insertDataOption: 'INSERT_ROWS',
       requestBody: { values: [row] },
     });
 
