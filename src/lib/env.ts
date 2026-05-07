@@ -14,6 +14,9 @@ export const config = {
     clientEmail: process.env.GOOGLE_SHEETS_CLIENT_EMAIL || '',
     spreadsheetId: process.env.GOOGLE_SHEETS_SPREADSHEET_ID || '',
   },
+  public: {
+    googleSheetsLink: process.env.NEXT_PUBLIC_GOOGLE_SHEETS_LINK || '',
+  },
 };
 
 export function isMockMode(): boolean {

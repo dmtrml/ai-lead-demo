@@ -12,7 +12,24 @@ export async function POST(request: Request) {
     }
 
     const chatId = message.chat.id;
-    const text = message.text;
+    const text = message.text.trim();
+
+    if (text === '/start') {
+      await sendMessage(
+        chatId,
+        '👋 Здравствуйте! Я <b>AI-ассистент для обработки заявок</b>.\n\n'
+        + 'Я помогаю автоматически анализировать входящие заявки:\n'
+        + '• Определяю нишу и тип услуги\n'
+        + '• Оцениваю бюджет и срочность\n'
+        + '• Квалифицирую лид (горячий / тёплый / холодный)\n'
+        + '• Готовлю черновик ответа менеджеру\n'
+        + '• Записываю все данные в Google Sheets\n\n'
+        + '📝 <b>Попробуйте прямо сейчас</b> — отправьте текст вашей заявки.\n\n'
+        + 'Пример:\n'
+        + '<i>«У нас онлайн-школа английского, хотим запустить рекламу. Бюджет 150 000 ₽ в месяц.»</i>',
+      );
+      return NextResponse.json({ ok: true });
+    }
 
     await processLead({
       message: text,
@@ -23,7 +40,9 @@ export async function POST(request: Request) {
 
     await sendMessage(
       chatId,
-      'Спасибо! Заявка получена.\nЯ передал информацию менеджеру. Он свяжется с вами после обработки запроса.',
+      '✅ Спасибо! Заявка получена и обработана.\n\n'
+      + 'Я передал информацию менеджеру. Он свяжется с вами после обработки запроса.\n\n'
+      + 'Посмотреть результат можно на дашборде: https://ai-lead-demo.vercel.app',
     );
 
     return NextResponse.json({ ok: true });

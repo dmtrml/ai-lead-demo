@@ -26,6 +26,18 @@ async function callApi(method: string, body?: Record<string, unknown>): Promise<
   return res.json();
 }
 
+export async function getBotInfo(): Promise<{ username: string; link: string } | null> {
+  try {
+    const data = await callApi('getMe') as { ok: boolean; result: { username: string; first_name: string } };
+    if (data.ok && data.result.username) {
+      return { username: data.result.username, link: `https://t.me/${data.result.username}` };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 export async function pollNewMessages(): Promise<TelegramMessage[]> {
   if (isMockMode() || !isTelegramAvailable()) {
     console.log('[MOCK Telegram] pollNewMessages — no messages');

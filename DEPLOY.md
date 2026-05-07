@@ -50,7 +50,8 @@ QWEN_BASE_URL               = https://dashscope.aliyuncs.com/compatible-mode/v1
 QWEN_MODEL                  = qwen-plus
 GOOGLE_SHEETS_PRIVATE_KEY   = "-----BEGIN PRIVATE KEY-----\n..."
 GOOGLE_SHEETS_CLIENT_EMAIL  = ваш service account email
-GOOGLE_SHEETS_SPREADSHEET_ID = ID таблицы
+GOOGLE_SHEETS_SPREADSHEET_ID    = ID таблицы
+NEXT_PUBLIC_GOOGLE_SHEETS_LINK  = https://docs.google.com/spreadsheets/d/ID
 ```
 
 **Важно для `GOOGLE_SHEETS_PRIVATE_KEY`**:
