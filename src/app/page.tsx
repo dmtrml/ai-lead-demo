@@ -38,6 +38,7 @@ export default function Home() {
   const [selectedLead, setSelectedLead] = useState<Lead | null>(null);
   const [botInfo, setBotInfo] = useState<BotInfo>({ username: null, link: null });
   const [sheetsUrl, setSheetsUrl] = useState<string | null>(null);
+  const [pageReady, setPageReady] = useState(false);
 
   useEffect(() => {
     fetch('/api/health')
@@ -45,12 +46,13 @@ export default function Home() {
       .then((data) => {
         if (data.success) {
           setIntegrationStatus(data);
-          if (data.sheetsUrl) setSheetsUrl(data.sheetsUrl);
+          setSheetsUrl(data.sheetsUrl || null);
         }
       })
       .catch(() => {
         setIntegrationStatus({ telegram: false, ai: false, sheets: false, mockMode: true });
-      });
+      })
+      .finally(() => setPageReady(true));
 
     fetch('/api/leads')
       .then((r) => r.json())
@@ -68,7 +70,7 @@ export default function Home() {
       .then((data) => {
         if (data.success) setBotInfo({ username: data.username, link: data.link });
       })
-      .catch(() => {});
+      .catch((err) => console.error('[UI] bot-info fetch failed:', err));
   }, []);
 
   const handleSubmit = useCallback(() => {
@@ -105,6 +107,24 @@ export default function Home() {
 
   const allAvailable = integrationStatus?.telegram && integrationStatus?.ai && integrationStatus?.sheets;
   const isMockMode = integrationStatus?.mockMode ?? true;
+
+  if (!pageReady) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+            <span className="text-white text-base font-bold">AI</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-wave-1" />
+            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-wave-2" />
+            <span className="w-2 h-2 rounded-full bg-indigo-400 animate-wave-3" />
+          </div>
+          <p className="text-xs text-slate-600">Загрузка демо...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-slate-950">

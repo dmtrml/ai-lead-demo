@@ -1,10 +1,20 @@
 import { NextResponse } from 'next/server';
 import { config, isTelegramAvailable } from '@/lib/env';
 
+const SETUP_KEY = process.env.WEBHOOK_SETUP_KEY || '';
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
     const url = body.url;
+    const key = body.key || request.headers.get('x-webhook-key') || '';
+
+    if (SETUP_KEY && key !== SETUP_KEY) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid or missing webhook setup key' },
+        { status: 403 },
+      );
+    }
 
     if (!url) {
       return NextResponse.json(
@@ -50,12 +60,20 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   if (!isTelegramAvailable()) {
     return NextResponse.json({
       success: false,
       error: 'TELEGRAM_BOT_TOKEN is not configured',
     });
+  }
+
+  const key = request.headers.get('x-webhook-key') || '';
+  if (SETUP_KEY && key !== SETUP_KEY) {
+    return NextResponse.json(
+      { success: false, error: 'Invalid webhook setup key' },
+      { status: 403 },
+    );
   }
 
   const apiUrl = `https://api.telegram.org/bot${config.telegram.botToken}/getWebhookInfo`;

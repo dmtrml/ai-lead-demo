@@ -33,7 +33,8 @@ export async function getBotInfo(): Promise<{ username: string; link: string } |
       return { username: data.result.username, link: `https://t.me/${data.result.username}` };
     }
     return null;
-  } catch {
+  } catch (error) {
+    console.error('[Telegram] getBotInfo error:', error);
     return null;
   }
 }
@@ -45,6 +46,16 @@ export async function pollNewMessages(): Promise<TelegramMessage[]> {
   }
 
   try {
+    if (lastUpdateId === 0) {
+      const bootstrap = await callApi('getUpdates', { timeout: 2 }) as {
+        ok: boolean; result: Array<{ update_id: number }>
+      };
+      if (bootstrap.ok && bootstrap.result.length > 0) {
+        lastUpdateId = Math.max(...bootstrap.result.map((u) => u.update_id));
+      }
+      return [];
+    }
+
     const data = await callApi('getUpdates', {
       offset: lastUpdateId + 1,
       timeout: 5,

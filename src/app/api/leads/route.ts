@@ -1,6 +1,9 @@
 import { NextResponse } from 'next/server';
 import { processLead, getStoredLeads } from '@/lib/leads';
-import { readLeads, ensureSheetHeaders } from '@/lib/sheets';
+import { readLeads } from '@/lib/sheets';
+import { config } from '@/lib/env';
+
+const MAX_MSG_LENGTH = 4000;
 
 export async function POST(request: Request) {
   try {
@@ -14,8 +17,12 @@ export async function POST(request: Request) {
       );
     }
 
+    const trimmed = message.trim().length > MAX_MSG_LENGTH
+      ? message.trim().slice(0, MAX_MSG_LENGTH)
+      : message.trim();
+
     const result = await processLead({
-      message: message.trim(),
+      message: trimmed,
       source: source || 'Web form',
       name,
       contact,

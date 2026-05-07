@@ -24,16 +24,17 @@ export default function LeadForm({ message, onMessageChange, onSubmit, disabled 
           <div className="relative">
             <textarea
               value={message}
-              onChange={(e) => onMessageChange(e.target.value)}
+              onChange={(e) => onMessageChange(e.target.value.slice(0, 4000))}
               placeholder="Введите текст заявки клиента..."
               rows={3}
               disabled={disabled}
+              maxLength={4000}
               className="w-full px-4 py-3 rounded-2xl bg-slate-800/50 border border-slate-700/50 text-sm text-slate-200
                          placeholder:text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500/30
                          focus:border-indigo-500/50 transition-all resize-none disabled:opacity-50
                          backdrop-blur-sm"
             />
-            <div className="absolute right-3 bottom-3 text-[9px] text-slate-600">{message.length} зн.</div>
+            <div className="absolute right-3 bottom-3 text-[9px] text-slate-600">{message.length} / 4000</div>
           </div>
         </div>
       </div>

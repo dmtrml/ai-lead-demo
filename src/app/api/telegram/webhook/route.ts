@@ -2,12 +2,21 @@ import { NextResponse } from 'next/server';
 import { processLead } from '@/lib/leads';
 import { sendMessage } from '@/lib/telegram';
 
+const MAX_MSG_LENGTH = 4000;
+
 export async function POST(request: Request) {
   try {
     const update = await request.json();
 
     const message = update?.message;
     if (!message?.text) {
+      if (message?.chat?.id) {
+        await sendMessage(
+          message.chat.id,
+          'Пожалуйста, отправьте текстовое сообщение с описанием вашей заявки.\n'
+          + 'Я пока не умею обрабатывать фото, стикеры и голосовые сообщения.',
+        );
+      }
       return NextResponse.json({ ok: true });
     }
 
@@ -31,8 +40,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ ok: true });
     }
 
+    if (!text) {
+      await sendMessage(chatId, 'Пожалуйста, напишите текст заявки.');
+      return NextResponse.json({ ok: true });
+    }
+
+    const trimmed = text.length > MAX_MSG_LENGTH
+      ? text.slice(0, MAX_MSG_LENGTH)
+      : text;
+
     await processLead({
-      message: text,
+      message: trimmed,
       source: 'Telegram',
       name: message.from?.first_name || message.chat.first_name || 'Не указано',
       contact: message.from?.username ? `@${message.from.username}` : `id${chatId}`,
@@ -48,6 +66,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ ok: true });
   } catch (error) {
     console.error('[Webhook] error:', error);
-    return NextResponse.json({ ok: true });
+    return NextResponse.json(
+      { error: 'Internal server error' },
+      { status: 500 },
+    );
   }
 }
