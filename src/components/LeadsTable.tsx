@@ -142,7 +142,6 @@ export default function LeadsTable({ leads, onSelectLead, onStatusChange }: Lead
                       </div>
                       <div>
                         <div className="text-sm font-medium text-slate-200">{lead.name}</div>
-                        <div className="text-[10px] text-slate-600">{lead.contact}</div>
                       </div>
                     </div>
                   </Td>

@@ -64,11 +64,7 @@ export default function ManagerNotification({ lead }: ManagerNotificationProps) 
                   <p className="text-[10px] text-slate-300 leading-relaxed">{lead.draft_reply}</p>
                 </div>
 
-                <div className="flex items-center justify-between pt-1 border-t border-slate-700/50">
-                  <div className="flex items-center gap-1 text-[9px] text-slate-600">
-                    <span>👤</span>
-                    <span>{lead.contact}</span>
-                  </div>
+                <div className="flex items-center justify-end pt-1 border-t border-slate-700/50">
                   <span className="text-[9px] text-indigo-400 font-medium">{lead.status}</span>
                 </div>
               </div>

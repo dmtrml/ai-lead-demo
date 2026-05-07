@@ -41,21 +41,21 @@ export async function readLeads(): Promise<Lead[]> {
       id: row[0] || '',
       date: row[1] || '',
       name: row[2] || 'Не указано',
-      contact: row[3] || '',
-      source: row[4] || '',
-      message: row[5] || '',
-      niche: row[6] || '',
-      service_type: row[7] || '',
-      budget: row[8] || '',
-      urgency: row[9] || '',
-      summary: row[10] || '',
-      lead_priority: priorityMap[row[11]] || 'cold',
-      priority_label_ru: row[11] || 'Холодный',
-      priority_reason: row[12] || '',
-      questions_to_ask: (row[13] || '').split('; ').filter(Boolean),
-      draft_reply: row[14] || '',
-      status: row[15] || 'Новая',
-      responsible: row[16] || 'Менеджер',
+      contact: '',
+      source: row[3] || '',
+      message: row[4] || '',
+      niche: row[5] || '',
+      service_type: row[6] || '',
+      budget: row[7] || '',
+      urgency: row[8] || '',
+      summary: row[9] || '',
+      lead_priority: priorityMap[row[10]] || 'cold',
+      priority_label_ru: row[10] || 'Холодный',
+      priority_reason: row[11] || '',
+      questions_to_ask: (row[12] || '').split('; ').filter(Boolean),
+      draft_reply: row[13] || '',
+      status: row[14] || 'Новая',
+      responsible: row[15] || 'Менеджер',
     }));
   } catch (error) {
     console.error('[Sheets] read error:', error);
@@ -76,7 +76,7 @@ export async function ensureSheetHeaders(): Promise<void> {
 
     if (!response.data.values || response.data.values.length === 0) {
       const headers = [
-        'ID', 'Дата', 'Имя', 'Контакт', 'Источник', 'Исходное сообщение',
+        'ID', 'Дата', 'Имя', 'Источник', 'Исходное сообщение',
         'Ниша', 'Тип услуги', 'Бюджет', 'Срочность', 'AI Summary',
         'Приоритет', 'Причина приоритета', 'Что уточнить', 'Черновик ответа',
         'Статус', 'Ответственный',
@@ -84,7 +84,7 @@ export async function ensureSheetHeaders(): Promise<void> {
 
       await client.values.update({
         spreadsheetId: config.sheets.spreadsheetId,
-        range: 'Leads!A1:Q1',
+        range: 'Leads!A1:P1',
         valueInputOption: 'RAW',
         requestBody: { values: [headers] },
       });
@@ -110,7 +110,6 @@ export async function appendLead(lead: Lead): Promise<boolean> {
       lead.id,
       lead.date,
       lead.name,
-      lead.contact,
       lead.source,
       lead.message,
       lead.niche,
@@ -158,7 +157,7 @@ export async function appendLead(lead: Lead): Promise<boolean> {
 
     await client.values.update({
       spreadsheetId: config.sheets.spreadsheetId,
-      range: 'Leads!A2:Q2',
+      range: 'Leads!A2:P2',
       valueInputOption: 'RAW',
       requestBody: { values: [row] },
     });
