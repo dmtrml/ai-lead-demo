@@ -42,7 +42,7 @@ export async function POST(request: Request) {
       chatId,
       '✅ Спасибо! Заявка получена и обработана.\n\n'
       + 'Я передал информацию менеджеру. Он свяжется с вами после обработки запроса.\n\n'
-      + 'Посмотреть результат можно на дашборде: https://ai-lead-demo.vercel.app',
+      + 'Посмотреть результат можно на дашборде: https://ai-lead-demo-c7n8.vercel.app',
     );
 
     return NextResponse.json({ ok: true });

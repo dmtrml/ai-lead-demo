@@ -271,7 +271,13 @@ export default function Home() {
             </div>
             <span className="text-[10px] text-slate-600">{leads.length} заяв{leads.length === 1 ? 'ка' : leads.length < 5 ? 'ки' : 'ок'}</span>
           </div>
-          <LeadsTable leads={leads} onSelectLead={setSelectedLead} />
+          <LeadsTable
+            leads={leads}
+            onSelectLead={setSelectedLead}
+            onStatusChange={(id, status) =>
+              setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)))
+            }
+          />
         </section>
 
         <footer className="text-center pb-8">
