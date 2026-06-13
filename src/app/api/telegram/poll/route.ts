@@ -2,11 +2,17 @@ import { NextResponse } from 'next/server';
 import { pollNewMessages, sendMessage } from '@/lib/telegram';
 import { processLead } from '@/lib/leads';
 import { isTelegramAvailable } from '@/lib/env';
+import { checkRateLimit, requireInternalApiKey } from '@/lib/api-guard';
 
 const MAX_MSG_LENGTH = 4000;
 
-export async function POST() {
+export async function POST(request: Request) {
   try {
+    const guardResponse = requireInternalApiKey(request)
+      ?? checkRateLimit(request, { keyPrefix: 'telegram:poll', maxRequests: 20, windowMs: 60_000 });
+
+    if (guardResponse) return guardResponse;
+
     if (isTelegramAvailable()) {
       const webhookUrl = `https://api.telegram.org/bot${process.env.TELEGRAM_BOT_TOKEN}/getWebhookInfo`;
       const res = await fetch(webhookUrl);
