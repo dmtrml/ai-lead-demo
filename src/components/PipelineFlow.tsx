@@ -13,9 +13,6 @@ const steps = [
 ];
 
 export default function PipelineFlow({ activeStep }: PipelineFlowProps) {
-  const progress = Math.min(Math.max(activeStep, 0), steps.length - 1);
-  const progressPercent = steps.length === 1 ? 0 : (progress / (steps.length - 1)) * 100;
-
   return (
     <div className="space-y-5">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
@@ -29,13 +26,7 @@ export default function PipelineFlow({ activeStep }: PipelineFlowProps) {
         </div>
       </div>
 
-      <div className="relative rounded-3xl border border-slate-700/40 bg-slate-950/40 p-4 sm:p-5 overflow-hidden">
-        <div className="absolute left-8 right-8 top-[2.35rem] hidden h-px bg-slate-700/70 sm:block" />
-        <div
-          className="absolute left-8 top-[2.35rem] hidden h-px bg-gradient-to-r from-violet-400 via-cyan-300 to-violet-400 transition-all duration-700 sm:block"
-          style={{ width: `calc((100% - 4rem) * ${progressPercent / 100})` }}
-        />
-
+      <div className="relative overflow-hidden rounded-3xl border border-slate-700/40 bg-slate-950/40 p-4 sm:p-5">
         <div className="grid gap-3 sm:grid-cols-5">
           {steps.map((step, i) => {
             const isDone = i < activeStep;
