@@ -21,7 +21,7 @@ export default function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps)
   return (
     <>
       <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-md" onClick={onClose} />
-      <aside className="fixed right-0 top-0 z-50 h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-slate-950/92 shadow-2xl animate-slide-in-right">
+      <aside className="fixed right-0 top-0 z-50 h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-slate-950/95 shadow-2xl animate-slide-in-right">
         <div className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/85 px-5 py-4 backdrop-blur-2xl">
           <div className="flex items-center justify-between gap-3">
             <div className="flex min-w-0 items-center gap-3">
