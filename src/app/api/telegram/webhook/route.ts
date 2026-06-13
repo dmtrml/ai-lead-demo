@@ -1,11 +1,19 @@
 import { NextResponse } from 'next/server';
 import { processLead } from '@/lib/leads';
 import { sendMessage } from '@/lib/telegram';
+import { config } from '@/lib/env';
+import { checkRateLimit, requireJsonContentType, requireTelegramSecret } from '@/lib/api-guard';
 
 const MAX_MSG_LENGTH = 4000;
 
 export async function POST(request: Request) {
   try {
+    const guardResponse = requireTelegramSecret(request)
+      ?? requireJsonContentType(request)
+      ?? checkRateLimit(request, { keyPrefix: 'telegram:webhook', maxRequests: 60, windowMs: 60_000 });
+
+    if (guardResponse) return guardResponse;
+
     const update = await request.json();
 
     const message = update?.message;
@@ -56,11 +64,15 @@ export async function POST(request: Request) {
       contact: message.from?.username ? `@${message.from.username}` : `id${chatId}`,
     });
 
+    const dashboardLine = config.public.appUrl
+      ? `\n\nПосмотреть результат можно на дашборде: ${config.public.appUrl}`
+      : '';
+
     await sendMessage(
       chatId,
       '✅ Спасибо! Заявка получена и обработана.\n\n'
-      + 'Я передал информацию менеджеру. Он свяжется с вами после обработки запроса.\n\n'
-      + 'Посмотреть результат можно на дашборде: https://ai-lead-demo-c7n8.vercel.app',
+      + 'Я передал информацию менеджеру. Он свяжется с вами после обработки запроса.'
+      + dashboardLine,
     );
 
     return NextResponse.json({ ok: true });
