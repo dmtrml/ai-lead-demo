@@ -1,12 +1,25 @@
 import { NextResponse } from 'next/server';
 import { processLead, getStoredLeads } from '@/lib/leads';
 import { readLeads } from '@/lib/sheets';
-import { config } from '@/lib/env';
+import { checkRateLimit, requireJsonContentType, requireSameOrigin } from '@/lib/api-guard';
 
 const MAX_MSG_LENGTH = 4000;
 
+function readOptionalString(value: unknown, maxLength: number): string | undefined {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  if (!trimmed) return undefined;
+  return trimmed.slice(0, maxLength);
+}
+
 export async function POST(request: Request) {
   try {
+    const guardResponse = requireSameOrigin(request)
+      ?? requireJsonContentType(request)
+      ?? checkRateLimit(request, { keyPrefix: 'leads:post', maxRequests: 10, windowMs: 60_000 });
+
+    if (guardResponse) return guardResponse;
+
     const body = await request.json();
     const { message, source, name, contact } = body;
 
@@ -23,9 +36,9 @@ export async function POST(request: Request) {
 
     const result = await processLead({
       message: trimmed,
-      source: source || 'Web form',
-      name,
-      contact,
+      source: readOptionalString(source, 80) || 'Web form',
+      name: readOptionalString(name, 120),
+      contact: readOptionalString(contact, 120),
     });
 
     return NextResponse.json({
@@ -45,8 +58,11 @@ export async function POST(request: Request) {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
+    const guardResponse = checkRateLimit(request, { keyPrefix: 'leads:get', maxRequests: 60, windowMs: 60_000 });
+    if (guardResponse) return guardResponse;
+
     const fromSheets = await readLeads();
 
     if (fromSheets.length > 0) {
