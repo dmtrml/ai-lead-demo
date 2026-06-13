@@ -5,113 +5,75 @@ interface PipelineFlowProps {
 }
 
 const steps = [
-  { icon: '✉️', label: 'Заявка', desc: 'Клиент отправляет сообщение' },
-  { icon: '🤖', label: 'AI-анализ', desc: 'Определяем нишу, бюджет, приоритет' },
-  { icon: '📊', label: 'Таблица', desc: 'Данные записаны в Google Sheets' },
-  { icon: '🔔', label: 'Уведомление', desc: 'Менеджеру отправлен разбор' },
-  { icon: '✍️', label: 'Черновик', desc: 'Готов ответ клиенту' },
+  { icon: '01', label: 'Получение', desc: 'Захват заявки' },
+  { icon: '02', label: 'Анализ', desc: 'AI читает контекст' },
+  { icon: '03', label: 'Квалификация', desc: 'Приоритет и сигналы' },
+  { icon: '04', label: 'Синхронизация', desc: 'Запись в Sheets' },
+  { icon: '05', label: 'Уведомление', desc: 'Менеджер получает разбор' },
 ];
 
 export default function PipelineFlow({ activeStep }: PipelineFlowProps) {
+  const progress = Math.min(Math.max(activeStep, 0), steps.length - 1);
+  const progressPercent = steps.length === 1 ? 0 : (progress / (steps.length - 1)) * 100;
+
   return (
-    <div className="relative">
-      <svg
-        className="absolute top-0 left-0 w-full h-12 pointer-events-none z-0 overflow-visible"
-        viewBox="0 0 100 48"
-        preserveAspectRatio="none"
-      >
-        {steps.slice(0, -1).map((_, i) => {
-          const x1 = ((2 * i + 1) * 100) / (steps.length * 2);
-          const x2 = ((2 * i + 3) * 100) / (steps.length * 2);
-          const isActive = i < activeStep;
-          return (
-            <line
-              key={i}
-              x1={x1}
-              y1="24"
-              x2={x2}
-              y2="24"
-              stroke={isActive ? 'url(#lineGradient)' : '#334155'}
-              strokeWidth="2.5"
-              strokeLinecap="round"
-              className="transition-all duration-700"
-            />
-          );
-        })}
-        <defs>
-          <linearGradient id="lineGradient" x1="0" y1="0" x2="1" y2="0">
-            <stop offset="0%" stopColor="#6366f1" />
-            <stop offset="100%" stopColor="#8b5cf6" />
-          </linearGradient>
-        </defs>
-      </svg>
+    <div className="space-y-5">
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between">
+        <div>
+          <div className="text-[10px] uppercase tracking-[0.3em] text-cyan-300/70">Automation rail</div>
+          <h2 className="mt-1 text-lg font-semibold text-slate-100">AI-пайплайн обработки заявки</h2>
+        </div>
+        <div className="premium-chip inline-flex w-fit items-center gap-2 rounded-full px-3 py-1.5 text-[10px] font-medium text-slate-400">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-300 animate-pulse-dot" />
+          Этап {Math.min(activeStep + 1, steps.length)}/{steps.length}
+        </div>
+      </div>
 
-      <div className="grid grid-cols-5 relative z-10 gap-0">
-        {steps.map((step, i) => (
-          <div key={i} className="flex justify-center">
-            <div className="relative flex items-center justify-center">
+      <div className="relative rounded-3xl border border-slate-700/40 bg-slate-950/40 p-4 sm:p-5 overflow-hidden">
+        <div className="absolute left-8 right-8 top-[2.35rem] hidden h-px bg-slate-700/70 sm:block" />
+        <div
+          className="absolute left-8 top-[2.35rem] hidden h-px bg-gradient-to-r from-violet-400 via-cyan-300 to-violet-400 transition-all duration-700 sm:block"
+          style={{ width: `calc((100% - 4rem) * ${progressPercent / 100})` }}
+        />
+
+        <div className="grid gap-3 sm:grid-cols-5">
+          {steps.map((step, i) => {
+            const isDone = i < activeStep;
+            const isActive = i === activeStep;
+            const isPending = i > activeStep;
+
+            return (
               <div
-                className={`
-                  flex items-center justify-center w-12 h-12 rounded-2xl
-                  transition-all duration-500 ease-out
-                  ${i < activeStep
-                    ? 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/20 scale-105'
-                    : i === activeStep
-                      ? 'bg-gradient-to-br from-indigo-500 to-purple-600 shadow-lg shadow-indigo-500/30 animate-pulse scale-105'
-                      : 'bg-slate-800/50 border border-slate-700/50 backdrop-blur-sm'}
-                `}
+                key={step.label}
+                className={`relative rounded-2xl border p-3 transition-all duration-500 ${
+                  isActive
+                    ? 'border-cyan-300/40 bg-cyan-400/10 shadow-lg shadow-cyan-500/10'
+                    : isDone
+                      ? 'border-violet-400/30 bg-violet-500/10'
+                      : 'border-slate-700/40 bg-slate-900/40'
+                }`}
               >
-                {i < activeStep ? (
-                  <svg className="w-5 h-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
-                  </svg>
-                ) : (
-                  <span className={`text-lg ${i > activeStep ? 'opacity-40' : ''}`}>{step.icon}</span>
-                )}
+                <div className="flex items-center gap-3 sm:block">
+                  <div
+                    className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl border text-[10px] font-bold tracking-wider transition-all ${
+                      isDone
+                        ? 'border-violet-300/30 bg-violet-400/20 text-violet-100'
+                        : isActive
+                          ? 'border-cyan-300/40 bg-cyan-300/15 text-cyan-100 premium-glow'
+                          : 'border-slate-700 bg-slate-900 text-slate-600'
+                    }`}
+                  >
+                    {isDone ? '✓' : step.icon}
+                  </div>
+                  <div className="mt-0 sm:mt-3">
+                    <div className={`text-sm font-semibold ${isPending ? 'text-slate-500' : 'text-slate-100'}`}>{step.label}</div>
+                    <div className={`mt-0.5 text-[10px] leading-tight ${isPending ? 'text-slate-700' : 'text-slate-400'}`}>{step.desc}</div>
+                  </div>
+                </div>
+                {isActive && <div className="mt-3 h-1 rounded-full animate-flow-gradient" />}
               </div>
-              {i === activeStep && (
-                <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75" />
-                  <span className="relative inline-flex rounded-full h-3 w-3 bg-indigo-500" />
-                </span>
-              )}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="grid grid-cols-5 gap-0 mt-3">
-        {steps.map((step, i) => (
-          <div key={i} className="text-center">
-            <div
-              className={`text-xs font-semibold transition-all duration-300 ${
-                i <= activeStep ? 'text-slate-100' : 'text-slate-600'
-              }`}
-            >
-              {step.label}
-            </div>
-            <div
-              className={`hidden sm:block text-[10px] mt-0.5 leading-tight transition-all duration-300 ${
-                i <= activeStep ? 'text-slate-400' : 'text-slate-700'
-              }`}
-            >
-              {step.desc}
-            </div>
-          </div>
-        ))}
-      </div>
-
-      <div className="mt-4 flex justify-center">
-        <div className="inline-flex items-center gap-1.5 text-[10px] text-slate-600 bg-slate-800/50 px-3 py-1 rounded-full border border-slate-700/50">
-          {steps.map((_, i) => (
-            <span
-              key={i}
-              className={`w-1.5 h-1.5 rounded-full transition-all duration-300 ${
-                i <= activeStep ? 'bg-indigo-400' : 'bg-slate-700'
-              }`}
-            />
-          ))}
-          <span className="ml-1.5 text-slate-500">Этап {Math.min(activeStep + 1, steps.length)}/{steps.length}</span>
+            );
+          })}
         </div>
       </div>
     </div>
