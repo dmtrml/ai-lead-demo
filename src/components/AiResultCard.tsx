@@ -34,6 +34,7 @@ const priorityConfig: Record<string, { label: string; glow: string; badge: strin
 export default function AiResultCard({ result, isNew }: AiResultCardProps) {
   const cfg = priorityConfig[result.lead_priority] || priorityConfig.cold;
   const signals = buildSignals(result);
+  const activeSignalsCount = signals.filter((signal) => signal.active).length;
 
   return (
     <div className={`premium-card rounded-[2rem] ${isNew ? 'animate-fade-in-up' : ''}`}>
@@ -76,7 +77,7 @@ export default function AiResultCard({ result, isNew }: AiResultCardProps) {
           <div className="premium-surface rounded-2xl p-4">
             <div className="mb-3 flex items-center justify-between">
               <div className="text-[10px] uppercase tracking-[0.24em] text-slate-500">Detected signals</div>
-              <span className="text-[10px] text-cyan-300">{signals.filter(Boolean).length}/4</span>
+              <span className="text-[10px] text-cyan-300">{activeSignalsCount}/4</span>
             </div>
             <div className="space-y-2">
               {signals.map((signal) => (
