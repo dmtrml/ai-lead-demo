@@ -1,120 +1,121 @@
 'use client';
 
 import type { Lead } from '@/lib/demo-data';
-import { getPriorityColor, getStatusColor } from '@/lib/demo-data';
 
 interface LeadDetailPanelProps {
   lead: Lead | null;
   onClose: () => void;
 }
 
-const priorityEmojis: Record<string, string> = { hot: '🔥', warm: '💡', cold: '❄️' };
+const priorityStyles: Record<string, { badge: string; dot: string }> = {
+  hot: { badge: 'border-rose-400/30 bg-rose-500/15 text-rose-200', dot: 'bg-rose-300' },
+  warm: { badge: 'border-amber-400/30 bg-amber-500/15 text-amber-200', dot: 'bg-amber-300' },
+  cold: { badge: 'border-slate-500/40 bg-slate-500/15 text-slate-300', dot: 'bg-slate-400' },
+};
 
 export default function LeadDetailPanel({ lead, onClose }: LeadDetailPanelProps) {
   if (!lead) return null;
 
+  const priority = priorityStyles[lead.lead_priority] || priorityStyles.cold;
+
   return (
     <>
-      <div className="fixed inset-0 bg-black/60 backdrop-blur-sm z-40" onClick={onClose} />
-      <div className="fixed top-0 right-0 h-full w-full max-w-lg bg-slate-900 border-l border-slate-700/50 z-50 shadow-2xl animate-slide-in-right overflow-y-auto">
-        <div className="sticky top-0 bg-slate-900 border-b border-slate-700/50 px-5 py-4 flex items-center justify-between z-10">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-indigo-500/30 to-purple-500/30 border border-slate-600/50 flex items-center justify-center text-sm font-bold text-slate-300">
-              {lead.name[0]}
+      <div className="fixed inset-0 z-40 bg-slate-950/70 backdrop-blur-md" onClick={onClose} />
+      <aside className="fixed right-0 top-0 z-50 h-full w-full max-w-xl overflow-y-auto border-l border-white/10 bg-slate-950/92 shadow-2xl animate-slide-in-right">
+        <div className="sticky top-0 z-10 border-b border-white/10 bg-slate-950/85 px-5 py-4 backdrop-blur-2xl">
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex min-w-0 items-center gap-3">
+              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-violet-500/20 to-cyan-400/20 text-sm font-bold text-slate-100 ring-1 ring-slate-700/60">
+                {lead.name?.[0] || 'L'}
+              </div>
+              <div className="min-w-0">
+                <div className="truncate text-sm font-semibold text-slate-100">{lead.name}</div>
+                <div className="text-[10px] text-slate-600">#{lead.id} · {lead.date} · {lead.source}</div>
+              </div>
             </div>
-            <div>
-              <div className="text-sm font-semibold text-slate-200">{lead.name}</div>
-              <div className="text-[10px] text-slate-500">#{lead.id} · {lead.date}</div>
-            </div>
+            <button
+              onClick={onClose}
+              className="flex h-9 w-9 items-center justify-center rounded-2xl border border-slate-700 bg-slate-900 text-slate-500 transition-colors hover:border-slate-500 hover:text-slate-200"
+              aria-label="Закрыть"
+            >
+              ×
+            </button>
           </div>
-          <button
-            onClick={onClose}
-            className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700 hover:bg-slate-700 flex items-center justify-center text-slate-400 hover:text-slate-200 transition-colors"
-          >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
         </div>
 
-        <div className="p-5 space-y-5">
-          <div className="flex items-center gap-2">
-            <span className={`text-[10px] font-bold px-2 py-1 rounded-full border ${getPriorityColor(lead.lead_priority)}`}>
-              {priorityEmojis[lead.lead_priority]} {lead.priority_label_ru}
-            </span>
-            <span className={`text-[10px] font-medium px-2 py-1 rounded-full border ${getStatusColor(lead.status)}`}>
-              {lead.status}
-            </span>
-          </div>
+        <div className="space-y-5 p-5">
+          <section className="premium-card rounded-[2rem] p-5">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className={`inline-flex items-center gap-1.5 rounded-full border px-3 py-1 text-xs font-bold ${priority.badge}`}>
+                <span className={`h-1.5 w-1.5 rounded-full ${priority.dot}`} />
+                {lead.priority_label_ru} lead
+              </span>
+              <span className="premium-chip rounded-full px-3 py-1 text-xs text-slate-300">{lead.status}</span>
+            </div>
+            <div className="mt-5 text-[10px] uppercase tracking-[0.26em] text-slate-500">Исходное сообщение</div>
+            <p className="mt-2 text-sm leading-relaxed text-slate-300">{lead.message}</p>
+          </section>
 
-          <div className="bg-slate-800/50 border border-slate-700/50 rounded-xl p-4">
-            <div className="text-[10px] font-medium text-slate-500 mb-1">Исходное сообщение</div>
-            <p className="text-sm text-slate-300 leading-relaxed">{lead.message}</p>
-          </div>
-
-          <div>
-            <div className="text-[10px] font-medium text-slate-500 mb-2">AI-анализ</div>
+          <section>
+            <SectionTitle title="AI-анализ" />
             <div className="grid grid-cols-2 gap-2">
               <DetailKV label="Ниша" value={lead.niche} />
               <DetailKV label="Услуга" value={lead.service_type} />
               <DetailKV label="Бюджет" value={lead.budget} />
               <DetailKV label="Срочность" value={lead.urgency} />
             </div>
-          </div>
+          </section>
 
-          <div>
-            <div className="text-[10px] font-medium text-slate-500 mb-1">Summary</div>
-            <p className="text-sm text-slate-300 leading-relaxed">{lead.summary}</p>
-          </div>
+          <section className="premium-surface rounded-3xl p-4">
+            <SectionTitle title="Summary" />
+            <p className="text-sm leading-relaxed text-slate-300">{lead.summary}</p>
+          </section>
 
-          <div>
-            <div className="text-[10px] font-medium text-slate-500 mb-1">Причина приоритета</div>
-            <p className="text-sm text-slate-300">{lead.priority_reason}</p>
-          </div>
+          <section className="premium-surface rounded-3xl p-4">
+            <SectionTitle title="Причина приоритета" />
+            <p className="text-sm leading-relaxed text-slate-300">{lead.priority_reason}</p>
+          </section>
 
           {lead.questions_to_ask.length > 0 && (
-            <div>
-              <div className="text-[10px] font-medium text-slate-500 mb-1.5">Что уточнить</div>
-              <div className="space-y-1.5">
+            <section className="premium-surface rounded-3xl p-4">
+              <SectionTitle title="Discovery questions" />
+              <div className="space-y-2">
                 {lead.questions_to_ask.map((q, i) => (
-                  <div key={i} className="flex items-start gap-2 text-sm text-slate-400">
-                    <span className="w-5 h-5 rounded bg-slate-700/50 flex items-center justify-center text-[10px] text-slate-500 flex-shrink-0 mt-0.5">{i + 1}</span>
-                    <span>{q}</span>
+                  <div key={i} className="flex items-start gap-3 rounded-2xl bg-slate-950/35 px-3 py-2.5">
+                    <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full bg-violet-500/15 text-[10px] font-bold text-violet-200 ring-1 ring-violet-400/25">
+                      {i + 1}
+                    </span>
+                    <span className="text-sm leading-relaxed text-slate-400">{q}</span>
                   </div>
                 ))}
               </div>
-            </div>
+            </section>
           )}
 
-          <div className="bg-indigo-500/10 border border-indigo-500/20 rounded-xl p-4">
-            <div className="flex items-center gap-1.5 mb-1.5">
-              <span className="text-sm">✍️</span>
-              <span className="text-[10px] font-medium text-indigo-400">Черновик ответа</span>
-            </div>
-            <p className="text-sm text-slate-300 leading-relaxed">{lead.draft_reply}</p>
-          </div>
+          <section className="rounded-3xl border border-cyan-300/15 bg-cyan-400/5 p-4">
+            <SectionTitle title="Черновик ответа" />
+            <p className="text-sm leading-relaxed text-slate-300">{lead.draft_reply}</p>
+          </section>
 
-          <div className="grid grid-cols-2 gap-2 text-xs">
-            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
-              <span className="text-slate-500">Источник</span>
-              <p className="text-slate-300 font-medium mt-0.5">{lead.source}</p>
-            </div>
-            <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
-              <span className="text-slate-500">Ответственный</span>
-              <p className="text-slate-300 font-medium mt-0.5">{lead.responsible}</p>
-            </div>
-          </div>
+          <section className="grid grid-cols-2 gap-2">
+            <DetailKV label="Источник" value={lead.source} />
+            <DetailKV label="Ответственный" value={lead.responsible} />
+          </section>
         </div>
-      </div>
+      </aside>
     </>
   );
 }
 
+function SectionTitle({ title }: { title: string }) {
+  return <div className="mb-2 text-[10px] uppercase tracking-[0.24em] text-slate-500">{title}</div>;
+}
+
 function DetailKV({ label, value }: { label: string; value: string }) {
   return (
-    <div className="bg-slate-800/50 rounded-lg px-3 py-2 border border-slate-700/50">
-      <div className="text-[10px] font-medium text-slate-500">{label}</div>
-      <div className="text-sm text-slate-200 mt-0.5">{value}</div>
+    <div className="premium-surface rounded-2xl px-3 py-3">
+      <div className="text-[10px] uppercase tracking-[0.2em] text-slate-600">{label}</div>
+      <div className="mt-1 text-sm font-semibold text-slate-200">{value || '—'}</div>
     </div>
   );
 }
