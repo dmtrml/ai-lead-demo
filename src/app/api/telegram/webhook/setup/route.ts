@@ -1,20 +1,34 @@
 import { NextResponse } from 'next/server';
 import { config, isTelegramAvailable } from '@/lib/env';
+import { checkRateLimit, requireInternalApiKey, requireJsonContentType } from '@/lib/api-guard';
 
-const SETUP_KEY = process.env.WEBHOOK_SETUP_KEY || '';
+function requireSetupAuth(request: Request): NextResponse | null {
+  const key = request.headers.get('x-webhook-key') || '';
 
-export async function POST(request: Request) {
-  try {
-    const body = await request.json();
-    const url = body.url;
-    const key = body.key || request.headers.get('x-webhook-key') || '';
-
-    if (SETUP_KEY && key !== SETUP_KEY) {
+  if (config.security.webhookSetupKey) {
+    if (key !== config.security.webhookSetupKey) {
       return NextResponse.json(
         { success: false, error: 'Invalid or missing webhook setup key' },
         { status: 403 },
       );
     }
+
+    return null;
+  }
+
+  return requireInternalApiKey(request);
+}
+
+export async function POST(request: Request) {
+  try {
+    const guardResponse = requireSetupAuth(request)
+      ?? requireJsonContentType(request)
+      ?? checkRateLimit(request, { keyPrefix: 'telegram:webhook-setup', maxRequests: 10, windowMs: 60_000 });
+
+    if (guardResponse) return guardResponse;
+
+    const body = await request.json();
+    const url = body.url;
 
     if (!url) {
       return NextResponse.json(
@@ -34,7 +48,11 @@ export async function POST(request: Request) {
     const res = await fetch(apiUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, drop_pending_updates: true }),
+      body: JSON.stringify({
+        url,
+        drop_pending_updates: true,
+        ...(config.telegram.webhookSecret ? { secret_token: config.telegram.webhookSecret } : {}),
+      }),
     });
 
     const data = await res.json();
@@ -43,6 +61,7 @@ export async function POST(request: Request) {
       return NextResponse.json({
         success: true,
         message: `Webhook set to ${url}`,
+        secretTokenConfigured: !!config.telegram.webhookSecret,
         result: data,
       });
     }
@@ -61,19 +80,16 @@ export async function POST(request: Request) {
 }
 
 export async function GET(request: Request) {
+  const guardResponse = requireSetupAuth(request)
+    ?? checkRateLimit(request, { keyPrefix: 'telegram:webhook-setup:get', maxRequests: 20, windowMs: 60_000 });
+
+  if (guardResponse) return guardResponse;
+
   if (!isTelegramAvailable()) {
     return NextResponse.json({
       success: false,
       error: 'TELEGRAM_BOT_TOKEN is not configured',
     });
-  }
-
-  const key = request.headers.get('x-webhook-key') || '';
-  if (SETUP_KEY && key !== SETUP_KEY) {
-    return NextResponse.json(
-      { success: false, error: 'Invalid webhook setup key' },
-      { status: 403 },
-    );
   }
 
   const apiUrl = `https://api.telegram.org/bot${config.telegram.botToken}/getWebhookInfo`;
