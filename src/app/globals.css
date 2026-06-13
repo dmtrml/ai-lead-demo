@@ -3,13 +3,14 @@
 @plugin "tailwindcss-animate";
 
 :root {
-  --background: #0f172a;
-  --foreground: #f1f5f9;
-  --card: #1e293b;
-  --card-border: #334155;
+  --background: #020617;
+  --foreground: #f8fafc;
+  --card: rgba(15, 23, 42, 0.72);
+  --card-border: rgba(148, 163, 184, 0.16);
   --muted: #64748b;
-  --accent: #6366f1;
-  --accent-glow: rgba(99, 102, 241, 0.15);
+  --accent: #8b5cf6;
+  --accent-2: #06b6d4;
+  --accent-glow: rgba(139, 92, 246, 0.22);
 }
 
 @theme inline {
@@ -24,10 +25,23 @@
   scrollbar-color: #334155 transparent;
 }
 
+html {
+  background: #020617;
+}
+
 body {
-  background: var(--background);
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 16% 8%, rgba(139, 92, 246, 0.2), transparent 30rem),
+    radial-gradient(circle at 88% 10%, rgba(6, 182, 212, 0.16), transparent 28rem),
+    radial-gradient(circle at 50% 85%, rgba(59, 130, 246, 0.12), transparent 34rem),
+    linear-gradient(180deg, #020617 0%, #07111f 46%, #020617 100%);
   color: var(--foreground);
   font-family: var(--font-sans);
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
 }
 
 ::-webkit-scrollbar {
@@ -41,6 +55,92 @@ body {
 ::-webkit-scrollbar-thumb {
   background: #334155;
   border-radius: 3px;
+}
+
+.premium-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.premium-shell::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -2;
+  pointer-events: none;
+  background-image:
+    linear-gradient(rgba(148, 163, 184, 0.045) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(148, 163, 184, 0.045) 1px, transparent 1px);
+  background-size: 56px 56px;
+  mask-image: radial-gradient(circle at top, black 0%, transparent 72%);
+}
+
+.premium-shell::after {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgba(2, 6, 23, 0.12), rgba(2, 6, 23, 0.84));
+}
+
+.premium-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--card-border);
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(15, 23, 42, 0.58)),
+    linear-gradient(135deg, rgba(255, 255, 255, 0.055), transparent 42%);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06);
+  backdrop-filter: blur(22px);
+}
+
+.premium-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(139, 92, 246, 0.12), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgba(6, 182, 212, 0.1), transparent 26%);
+}
+
+.premium-card > * {
+  position: relative;
+  z-index: 1;
+}
+
+.premium-surface {
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  background: rgba(15, 23, 42, 0.52);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
+  backdrop-filter: blur(16px);
+}
+
+.premium-glow {
+  box-shadow:
+    0 0 0 1px rgba(139, 92, 246, 0.18),
+    0 18px 60px rgba(139, 92, 246, 0.18);
+}
+
+.text-gradient {
+  background: linear-gradient(135deg, #f8fafc 0%, #c4b5fd 44%, #67e8f9 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.premium-chip {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  background: rgba(15, 23, 42, 0.62);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.premium-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(148, 163, 184, 0.22), transparent);
 }
 
 @keyframes pulse-dot {
@@ -96,7 +196,7 @@ body {
 }
 
 .animate-shimmer {
-  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background: linear-gradient(90deg, rgba(30, 41, 59, 0.8) 25%, rgba(51, 65, 85, 0.9) 50%, rgba(30, 41, 59, 0.8) 75%);
   background-size: 200% 100%;
   animation: shimmer 1.5s ease-in-out infinite;
 }
@@ -117,7 +217,7 @@ body {
 }
 
 .animate-flow-gradient {
-  background: linear-gradient(90deg, #6366f1, #8b5cf6, #6366f1);
+  background: linear-gradient(90deg, #8b5cf6, #06b6d4, #8b5cf6);
   background-size: 200% 100%;
   animation: flow-gradient 3s ease-in-out infinite;
 }
@@ -129,4 +229,13 @@ body {
 
 .animate-status-pulse {
   animation: status-pulse 2s ease-in-out infinite;
+}
+
+@keyframes orbit-glow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+.animate-orbit-glow {
+  animation: orbit-glow 12s linear infinite;
 }
